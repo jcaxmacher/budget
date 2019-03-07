@@ -94,7 +94,7 @@ class Ledger(object):
     @classmethod
     def get_by_category(cls, account, category):
         response = table.query(
-            KeyConditionExpression=Key('pk').eq(account) & Key('sk').begins_with(category)
+            KeyConditionExpression=Key('pk').eq(account) & Key('sk').begins_with(f'{category}||')
         )
         items = [cls.deserialize(item) for item in response['Items']]
         response['Items'] = items
