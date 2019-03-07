@@ -3,8 +3,10 @@ from typing import List, Tuple
 from dataclasses import dataclass, field
 from decimal import Decimal
 from datetime import date, datetime
+from enum import Enum
 import uuid
 
+import pytz
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
@@ -15,11 +17,17 @@ LSI_2 = os.environ['LSI_2']
 table = boto3.resource('dynamodb').Table(TABLE_NAME)
 
 
+class TransactionType(Enum):
+    SPEND = 1
+    FUND = 2
+    INFLOW = 3
+
+
 @dataclass
 class Ledger(object):
     account: str
     category: str
-    transaction_type: str
+    transaction_type: TransactionType
     month: str
     amount: Decimal
     description: str
@@ -34,20 +42,24 @@ class Ledger(object):
     uuid: str = field(default_factory=lambda: str(uuid.uuid4())[:6])
 
     @property
+    def transaction_type_name(self):
+        return self.transaction_type.name
+
+    @property
     def pk(self):
         return self.account
 
     @property
     def sk(self):
-        return f'{self.category}||{self.month}||{self.transaction_type}||{self.uuid}'
+        return f'{self.category}||{self.month}||{self.transaction_type_name}||{self.uuid}'
 
     @property
     def tk(self):
-        return f'{self.category}||{self.transaction_type}||{self.month}'
+        return f'{self.category}||{self.transaction_type_name}||{self.month}'
 
     @property
     def qk(self):
-        return f'{self.transaction_type}||{self.month}'
+        return f'{self.transaction_type_name}||{self.month}'
 
     def save(self):
         data = {}
@@ -55,6 +67,8 @@ class Ledger(object):
             value = getattr(self, key)
             if isinstance(value, (date, datetime)):
                 data[key] = value.isoformat()
+            elif isinstance(value, TransactionType):
+                data[key] = value.name
             else:
                 data[key] = value
         if self.existing:
@@ -71,6 +85,8 @@ class Ledger(object):
                 value = value.isoformat()
             elif isinstance(value, Decimal):
                 value = str(value)
+            elif isinstance(value, TransactionType):
+                value = value.name
             data[key] = value
         return data
 
@@ -84,7 +100,7 @@ class Ledger(object):
         category, month, transaction_type, uuid = secondary_key.split('||')
         data['account'] = account
         data['category'] = category
-        data['transaction_type'] = transaction_type
+        data['transaction_type'] = TransactionType[transaction_type]
         data['month'] = month
         data['uuid'] = uuid
         data['date'] = date.fromisoformat(data['date'])
