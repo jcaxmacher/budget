@@ -23,7 +23,7 @@ class Ledger(object):
     month: str
     amount: Decimal
     description: str
-    date: date
+    date: datetime
     existing: bool = field(default=False)
     _outbound_attrs: Tuple[str] = (
         'category', 'transaction_type', 'date', 'amount', 'description', 'uuid'
