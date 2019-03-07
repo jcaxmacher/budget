@@ -1,0 +1,23 @@
+{
+  "name": "budget",
+  "version": "0.1.0",
+  "bin": {
+    "budget": "bin/budget.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@types/node": "8.10.40",
+    "typescript": "^3.3.3333",
+    "aws-cdk": "^0.25.1"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-dynamodb": "^0.25.1",
+    "@aws-cdk/aws-sns": "^0.25.1",
+    "@aws-cdk/aws-sqs": "^0.25.1",
+    "@aws-cdk/cdk": "^0.25.1"
+  }
+}
