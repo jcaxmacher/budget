@@ -103,7 +103,7 @@ class Ledger(object):
         data['transaction_type'] = TransactionType[transaction_type]
         data['month'] = month
         data['uuid'] = uuid
-        data['date'] = date.fromisoformat(data['date'])
+        data['date'] = datetime.fromisoformat(data['date'])
         data['existing'] = True
         return cls(**data)
 
