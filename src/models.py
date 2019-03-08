@@ -106,9 +106,9 @@ class Ledger(object):
             self.existing = True
             return response
         
-    def outbound(self):
+    def to_wire(self):
         data = {}
-        for key in self._outbound_attrs:
+        for key in self._wire_attrs:
             value = getattr(self, key)
             if isinstance(value, (date, datetime)):
                 value = value.isoformat()
@@ -118,6 +118,20 @@ class Ledger(object):
                 value = value.name
             data[key] = value
         return data
+
+    @classmethod
+    def from_wire(cls, account, data):
+        data['account'] = account
+        data['date'] = datetime.fromisoformat(data['date'])
+        data['amount'] = Decimal(data['amount'])
+        data['transaction_type'] = TransactionType[data['transaction_type']]
+        data['month'] = data['date'].strftime('%Y-%m')
+        if 'sk' in data:
+            data['existing'] = True
+            data['old_sk'] = data['sk']
+            del data['sk']
+        return cls(**data)
+
 
     @classmethod
     def deserialize(cls, data):
