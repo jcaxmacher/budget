@@ -153,7 +153,8 @@ class Ledger(object):
     @classmethod
     def get_by_category(cls, account, category):
         response = table.query(
-            KeyConditionExpression=Key('pk').eq(account) & Key('sk').begins_with(f'{category}||')
+            KeyConditionExpression=Key('pk').eq(account) & Key('sk').begins_with(f'{category}||'),
+            ReturnConsumedCapacity='TOTAL'
         )
         items = [cls.deserialize(item) for item in response['Items']]
         response['Items'] = items
@@ -162,7 +163,8 @@ class Ledger(object):
     @classmethod
     def get_by_category_month(cls, account, category, month):
         response = table.query(
-            KeyConditionExpression=Key('pk').eq(account) & Key('sk').begins_with(f'{category}||{month}')
+            KeyConditionExpression=Key('pk').eq(account) & Key('sk').begins_with(f'{category}||{month}'),
+            ReturnConsumedCapacity='TOTAL'
         )
         items = [cls.deserialize(item) for item in response['Items']]
         response['Items'] = items
@@ -171,8 +173,9 @@ class Ledger(object):
     @classmethod
     def get_by_category_transaction_type(cls, account, category, transaction_type):
         response = table.query(
-            KeyConditionExpression=Key('pk').eq(account) & Key('tk').begins_with(f'{category}||{transaction_type}||'),
-            IndexName=LSI_1
+            KeyConditionExpression=Key('pk').eq(account) & Key('tk').begins_with(f'{category}||{transaction_type.name}||'),
+            IndexName=LSI_1,
+            ReturnConsumedCapacity='TOTAL'
         )
         items = [cls.deserialize(item) for item in response['Items']]
         response['Items'] = items
@@ -181,7 +184,8 @@ class Ledger(object):
     @classmethod
     def get_by_category_month_transaction_type(cls, account, category, month, transaction_type):
         response = table.query(
-            KeyConditionExpression=Key('pk').eq(account) & Key('sk').eq(f'{category}||{month}||{transaction_type}||')
+            KeyConditionExpression=Key('pk').eq(account) & Key('sk').begins_with(f'{category}||{month}||{transaction_type.name}||'),
+            ReturnConsumedCapacity='TOTAL'
         )
         items = [cls.deserialize(item) for item in response['Items']]
         response['Items'] = items
@@ -190,8 +194,9 @@ class Ledger(object):
     @classmethod
     def get_by_transaction_type(cls, account, transaction_type):
         response = table.query(
-            KeyConditionExpression=Key('pk').eq(account) & Key('qk').begins_with(f'{transaction_type}||'),
-            IndexName=LSI_2
+            KeyConditionExpression=Key('pk').eq(account) & Key('qk').begins_with(f'{transaction_type.name}||'),
+            IndexName=LSI_2,
+            ReturnConsumedCapacity='TOTAL'
         )
         items = [cls.deserialize(item) for item in response['Items']]
         response['Items'] = items
