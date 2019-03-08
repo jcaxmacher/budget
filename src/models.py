@@ -72,11 +72,39 @@ class Ledger(object):
                 data[key] = value.name
             else:
                 data[key] = value
+        # Composite key has changed, so we have to delete the old item
+        if self.old_sk and self.old_sk != self.sk:
+            response = table.delete_item(Key={
+                'pk': self.pk,
+                'sk': self.old_sk
+            }, ReturnConsumedCapacity='TOTAL')
+            print(response)
+            self.existing = False
+            self.old_sk = ''
+        # If we have an existing item (which must not have changed the
+        # composite key), update the fields
         if self.existing:
-            return table.update_item(Item=data)
+            data.pop('pk')
+            data.pop('sk')
+            update_expression = 'SET {}'.format(','.join(f'#{k}=:{k}' for k in data))
+            expression_attribute_values = {f':{k}': v for k, v in data.items()}
+            expression_attribute_names = {f'#{k}': k for k in data}
+            response = table.update_item(
+                Key={
+                    'pk': self.pk,
+                    'sk': self.sk
+                },
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_attribute_values,
+                ExpressionAttributeNames=expression_attribute_names,
+                ReturnValues='UPDATED_NEW',
+                ReturnConsumedCapacity='TOTAL'
+            )
+            return response
         else:
+            response = table.put_item(Item=data, ReturnConsumedCapacity='TOTAL')
             self.existing = True
-            return table.put_item(Item=data)
+            return response
         
     def outbound(self):
         data = {}
