@@ -33,13 +33,14 @@ class Ledger(object):
     description: str
     date: datetime
     existing: bool = field(default=False)
-    _outbound_attrs: Tuple[str] = (
-        'category', 'transaction_type', 'date', 'amount', 'description', 'uuid'
+    old_sk: str = field(default='')
+    _wire_attrs: Tuple[str] = (
+        'category', 'transaction_type', 'date', 'amount', 'description', 'sk'
     )
     _serialize_attrs: Tuple[str] = (
         'pk', 'sk', 'tk', 'qk', 'amount', 'description', 'date'
     )
-    uuid: str = field(default_factory=lambda: str(uuid.uuid4())[:6])
+    uuid: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
 
     @property
     def transaction_type_name(self):
